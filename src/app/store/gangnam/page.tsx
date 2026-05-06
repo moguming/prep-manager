@@ -37,7 +37,9 @@ export default function GangnamPage() {
 
   const saveData = async () => {
     const rows = gangnamSections.flatMap((section) =>
-      section.items.map((item) => {
+      section.items
+        .filter((item) => item.type !== "empty")
+        .map((item) => {
       if (item.type === "check") {
         return {
           store: "gangnam",
