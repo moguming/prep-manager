@@ -1,4 +1,4 @@
-export const gangnamSections = [
+export const cheongjigiSections  = [
   {
     title: "주방",
 
@@ -55,27 +55,6 @@ export const gangnamSections = [
       { type: "check", name: "쓰레기봉투" },
       { type: "check", name: "니트릴장갑" },
       { type: "check", name: "세탁비누" },
-    ],
-  },
-
-    {
-    title: "하나로",
-
-    items: [
-      { type: "quantity", name: "쌀" },
-      { type: "check", name: "파" },
-      { type: "check", name: "양파" },
-      { type: "check", name: "배추" },
-      { type: "check", name: "콩나물" },
-
-      { type: "check", name: "무" },
-      { type: "check", name: "우동사리" },
-      { type: "check", name: "냅킨" },
-      { type: "check", name: "물티슈" },
-      { type: "check", name: "부탄가스" },
-
-      { type: "check", name: "물엿" },
-      { type: "check", name: "퐁퐁" },
     ],
   },
 

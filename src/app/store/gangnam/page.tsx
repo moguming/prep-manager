@@ -35,39 +35,52 @@ export default function GangnamPage() {
     }))
   }
 
+
+  const getSessionKey = () => {
+    const now = new Date()
+    const hour = now.getHours()
+
+    const date = new Date(now)
+
+    if (hour < 12) {
+      date.setDate(date.getDate() - 1)
+    }
+
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+
+    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
+
+    return `${yyyy}-${mm}-${dd}-${session}`
+  }
+
   const saveData = async () => {
+    const sessionKey = getSessionKey()
+
     const rows = gangnamSections.flatMap((section) =>
       section.items
         .filter((item) => item.type !== "empty")
         .map((item) => {
-      if (item.type === "check") {
-        return {
-          store: "gangnam",
-          item_name: item.name,
-          checked: checkedItems.includes(item.name),
-          quantity: 0,
-        }
-      }
+          if (item.type === "check") {
+            return {
+              store: "gangnam",
+              session_key: sessionKey,
+              item_name: item.name,
+              checked: checkedItems.includes(item.name),
+              quantity: 0,
+            }
+          }
 
-      return {
-        store: "gangnam",
-        item_name: item.name,
-        checked: false,
-        quantity: quantityItems[item.name] || 0,
-      }
-  })
-  )
-
-    const { error: deleteError } = await supabase
-      .from("prepare_logs")
-      .delete()
-      .eq("store", "gangnam")
-
-    if (deleteError) {
-      console.log(deleteError)
-      alert("기존 데이터 삭제 실패")
-      return
-    }
+          return {
+            store: "gangnam",
+            session_key: sessionKey,
+            item_name: item.name,
+            checked: false,
+            quantity: quantityItems[item.name] || 0,
+          }
+        })
+    )
 
     const { error: insertError } = await supabase
       .from("prepare_logs")
