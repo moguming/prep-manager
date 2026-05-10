@@ -3,33 +3,62 @@ export const gangnamSections = [
     title: "주방",
 
     items: [
-      { type: "check", name: "양" },
-      { type: "check", name: "대창" },
-      { type: "check", name: "막창" },
+      { type: "quantity", name: "양" },
+      { type: "quantity", name: "대창" },
+      { type: "quantity", name: "막창" },
       { type: "check", name: "염통" },
-      { type: "check", name: "차돌" },
+      { type: "quantity", name: "차돌" },
 
       { type: "check", name: "상추" },
+      { type: "check", name: "무침장" },
+      { type: "check", name: "참기름" },
+      { type: "check", name: "참깨" },
+      { type: "empty" },
 
-      { type: "check", name: "국밥고기" },
-      { type: "check", name: "깐양" },
+
+      { type: "quantity", name: "국밥고기" },
+      { type: "quantity", name: "깐양" },
       { type: "check", name: "선지" },
+      { type: "check", name: "간마늘" },
+      { type: "check", name: "월계수" },
+      { type: "check", name: "가루" },
 
       { type: "check", name: "쑥갓" },
       { type: "check", name: "느타리" },
       { type: "check", name: "팽이" },
       { type: "check", name: "표고" },
       { type: "check", name: "곱창" },
-
       { type: "check", name: "곱창고추장" },
       { type: "check", name: "곱창다대기" },
-      { type: "check", name: "참기름" },
-      { type: "check", name: "간마늘" },
       { type: "check", name: "딱딱이" },
+      { type: "empty" },
+
+      { type: "check", name: "소면" },
+      { type: "check", name: "육수" },
+      { type: "check", name: "황태" },
+      { type: "check", name: "누룽지" },
+      { type: "check", name: "황태참기름" },
+
+      { type: "check", name: "소금" },
+      { type: "check", name: "미원" },
+      { type: "check", name: "설탕" },
+      { type: "check", name: "다시다" },
+      { type: "check", name: "식초" },
+      { type: "check", name: "고춧가루" },
       
 
-      { type: "quantity", name: "랩" },
-      { type: "quantity", name: "물김치" },
+      { type: "check", name: "랩" },
+      { type: "check", name: "락스" },
+      { type: "check", name: "니트릴장갑" },
+      { type: "check", name: "위생장갑" },
+      { type: "check", name: "면장갑" },
+      { type: "check", name: "고무장갑" },
+      { type: "check", name: "행주" },
+      { type: "check", name: "키친타올" },
+
+      { type: "check", name: "커피" },
+      { type: "check", name: "두부" },
+
       { type: "empty" },
     ],
   },
@@ -63,9 +92,9 @@ export const gangnamSections = [
 
     items: [
       { type: "quantity", name: "쌀" },
-      { type: "check", name: "파" },
-      { type: "check", name: "양파" },
-      { type: "check", name: "배추" },
+      { type: "quantity", name: "파" },
+      { type: "quantity", name: "양파" },
+      { type: "quantity", name: "배추" },
       { type: "check", name: "콩나물" },
 
       { type: "check", name: "무" },

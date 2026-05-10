@@ -112,9 +112,9 @@ export default function GangnamPage() {
 
             <div>
               <h1 className="text-2xl font-bold">강남점 준비물</h1>
-              <p className="mt-1 text-xs text-stone-500">
+              {/* <p className="mt-1 text-xs text-stone-500">
                 준비된 항목을 눌러 체크해주세요
-              </p>
+              </p> */}
             </div>
           </div>
 

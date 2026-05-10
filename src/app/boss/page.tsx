@@ -219,9 +219,9 @@ export default function BossPage() {
                 사장님 화면
               </h1>
 
-              <p className="text-sm text-stone-500">
-                준비물 현황
-              </p>
+              {/* <p className="text-sm text-stone-500">
+                준비물 현황 */}
+              {/* </p> */}
             </div>
           </div>
 

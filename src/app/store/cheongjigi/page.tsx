@@ -108,9 +108,9 @@ export default function CheongjigiPage() {
 
             <div>
               <h1 className="text-2xl font-bold">청지기 준비물</h1>
-              <p className="mt-1 text-xs text-stone-500">
-                준비된 항목을 눌러 체크해주세요
-              </p>
+              {/* <p className="mt-1 text-xs text-stone-500">
+                준비할 항목을 눌러 체크해주세요
+              </p> */}
             </div>
           </div>
 
