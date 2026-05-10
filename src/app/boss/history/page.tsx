@@ -16,39 +16,62 @@ type PrepareLog = {
   created_at: string
 }
 
-type HistoryGroup = {
+type SessionGroup = {
   key: string
   label: string
   store: string
   logs: PrepareLog[]
 }
 
+type DateGroup = {
+  date: string
+  sessions: SessionGroup[]
+}
+
 export default function HistoryPage() {
   const router = useRouter()
 
-  const [groups, setGroups] = useState<HistoryGroup[]>([])
-  const [openKey, setOpenKey] = useState<string>("")
+  const [groups, setGroups] = useState<DateGroup[]>([])
+  const [openDate, setOpenDate] = useState<string>("")
   const [loading, setLoading] = useState(true)
 
+  const getDateFromSessionKey = (sessionKey: string) => {
+    return sessionKey.replace("-lunch", "").replace("-dinner", "")
+  }
+
   const makeLabel = (store: string, sessionKey: string) => {
-    const storeName = store === "gangnam" ? "강남점" : "청지기"
-
-    if (sessionKey.includes("lunch")) {
-      return `${sessionKey.replace("-lunch", "")} ${storeName} 점심`
+    if (store === "gangnam" && sessionKey.endsWith("-lunch")) {
+      return "강남점 점심"
     }
 
-    if (sessionKey.includes("dinner")) {
-      return `${sessionKey.replace("-dinner", "")} ${storeName} 저녁`
+    if (store === "gangnam" && sessionKey.endsWith("-dinner")) {
+      return "강남점 저녁"
     }
 
-    return `${sessionKey} ${storeName}`
+    if (store === "cheongjigi") {
+      return "청지기"
+    }
+
+    return store
+  }
+
+  const getSessionOrder = (store: string, sessionKey: string) => {
+    if (store === "gangnam" && sessionKey.endsWith("-lunch")) return 1
+    if (store === "gangnam" && sessionKey.endsWith("-dinner")) return 2
+    if (store === "cheongjigi") return 3
+    return 99
   }
 
   const mergeItems = (logs: PrepareLog[]) => {
+    const orderedNames: string[] = []
     const checkedSet = new Set<string>()
     const quantityMap = new Map<string, number>()
 
     logs.forEach((log) => {
+      if (!orderedNames.includes(log.item_name)) {
+        orderedNames.push(log.item_name)
+      }
+
       if (log.checked) {
         checkedSet.add(log.item_name)
       }
@@ -59,12 +82,21 @@ export default function HistoryPage() {
       }
     })
 
-    const result: string[] = []
+    return orderedNames
+      .map((name) => {
+        if (checkedSet.has(name)) {
+          return name
+        }
 
-    checkedSet.forEach((name) => result.push(name))
-    quantityMap.forEach((quantity, name) => result.push(`${name}${quantity}`))
+        const quantity = quantityMap.get(name) || 0
 
-    return result
+        if (quantity > 0) {
+          return `${name}${quantity}`
+        }
+
+        return null
+      })
+      .filter((item): item is string => item !== null)
   }
 
   const fetchHistory = async () => {
@@ -82,19 +114,19 @@ export default function HistoryPage() {
       return
     }
 
-    const map = new Map<string, PrepareLog[]>()
+    const sessionMap = new Map<string, PrepareLog[]>()
 
     data?.forEach((log) => {
       if (!log.session_key) return
 
       const key = `${log.store}_${log.session_key}`
-      const current = map.get(key) || []
+      const current = sessionMap.get(key) || []
 
       current.push(log)
-      map.set(key, current)
+      sessionMap.set(key, current)
     })
 
-    const result: HistoryGroup[] = Array.from(map.entries()).map(
+    const sessionGroups: SessionGroup[] = Array.from(sessionMap.entries()).map(
       ([key, logs]) => {
         const store = logs[0].store
         const sessionKey = logs[0].session_key
@@ -108,10 +140,31 @@ export default function HistoryPage() {
       }
     )
 
+    const dateMap = new Map<string, SessionGroup[]>()
+
+    sessionGroups.forEach((group) => {
+      const date = getDateFromSessionKey(group.logs[0].session_key)
+      const current = dateMap.get(date) || []
+
+      current.push(group)
+      dateMap.set(date, current)
+    })
+
+    const result: DateGroup[] = Array.from(dateMap.entries())
+      .map(([date, sessions]) => ({
+        date,
+        sessions: sessions.sort(
+          (a, b) =>
+            getSessionOrder(a.store, a.logs[0].session_key) -
+            getSessionOrder(b.store, b.logs[0].session_key)
+        ),
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+
     setGroups(result)
 
     if (result.length > 0) {
-      setOpenKey(result[0].key)
+      setOpenDate(result[0].date)
     }
 
     setLoading(false)
@@ -138,9 +191,7 @@ export default function HistoryPage() {
 
           <div>
             <h1 className="text-2xl font-bold">주문내역 목록</h1>
-            <p className="text-sm text-stone-500">
-              일자별 주문내역
-            </p>
+            <p className="text-sm text-stone-500">일자별 주문내역</p>
           </div>
         </div>
 
@@ -154,22 +205,21 @@ export default function HistoryPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {groups.map((group) => {
-              const isOpen = openKey === group.key
-              const items = mergeItems(group.logs)
+            {groups.map((dateGroup) => {
+              const isOpen = openDate === dateGroup.date
 
               return (
                 <div
-                  key={group.key}
+                  key={dateGroup.date}
                   className="rounded-2xl bg-white p-3 shadow-sm"
                 >
                   <button
                     onClick={() =>
-                      setOpenKey(isOpen ? "" : group.key)
+                      setOpenDate(isOpen ? "" : dateGroup.date)
                     }
                     className={`
                       w-full rounded-xl px-4 py-3
-                      text-left text-base font-bold
+                      text-left text-lg font-bold
                       ${
                         isOpen
                           ? "bg-black text-white"
@@ -177,24 +227,35 @@ export default function HistoryPage() {
                       }
                     `}
                   >
-                    {group.label}
+                    {dateGroup.date}
                   </button>
 
                   {isOpen && (
-                    <div className="mt-3 rounded-xl bg-stone-50 p-4">
-                      <p className="mb-2 text-sm font-bold text-stone-500">
-                        {group.store === "gangnam" ? "강남점" : "청지기"} 주문내역
-                      </p>
+                    <div className="mt-3 flex flex-col gap-3">
+                      {dateGroup.sessions.map((session) => {
+                        const items = mergeItems(session.logs)
 
-                      {items.length === 0 ? (
-                        <p className="text-stone-400">
-                          주문 항목 없음
-                        </p>
-                      ) : (
-                        <p className="text-xl font-bold leading-relaxed">
-                          {items.join(" ")}
-                        </p>
-                      )}
+                        return (
+                          <div
+                            key={session.key}
+                            className="rounded-xl bg-stone-50 p-4"
+                          >
+                            <h2 className="mb-2 text-base font-bold text-stone-500">
+                              {session.label}
+                            </h2>
+
+                            {items.length === 0 ? (
+                              <p className="text-stone-400">
+                                주문 항목 없음
+                              </p>
+                            ) : (
+                              <p className="text-xl font-bold leading-relaxed">
+                                {items.join(" ")}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>

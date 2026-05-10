@@ -31,13 +31,9 @@ export default function BossPage() {
   const [memo, setMemo] = useState("")
   const [loading, setLoading] = useState(true)
 
-  // 강남점
-  // 12~20 lunch
-  // 20~다음날11:59 dinner
   const getGangnamSessionKey = () => {
     const now = new Date()
     const hour = now.getHours()
-
     const date = new Date(now)
 
     if (hour < 12) {
@@ -48,20 +44,14 @@ export default function BossPage() {
     const mm = String(date.getMonth() + 1).padStart(2, "0")
     const dd = String(date.getDate()).padStart(2, "0")
 
-    const session =
-      hour >= 12 && hour < 20
-        ? "lunch"
-        : "dinner"
+    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
 
     return `${yyyy}-${mm}-${dd}-${session}`
   }
 
-  // 청지기
-  // 13시 기준 하루 초기화
   const getCheongjigiSessionKey = () => {
     const now = new Date()
     const hour = now.getHours()
-
     const date = new Date(now)
 
     if (hour < 13) {
@@ -73,38 +63,6 @@ export default function BossPage() {
     const dd = String(date.getDate()).padStart(2, "0")
 
     return `${yyyy}-${mm}-${dd}`
-  }
-
-  const mergeItems = (logs: PrepareLog[]) => {
-    const checkedSet = new Set<string>()
-    const quantityMap = new Map<string, number>()
-
-    logs.forEach((log) => {
-      if (log.checked) {
-        checkedSet.add(log.item_name)
-      }
-
-      if (log.quantity > 0) {
-        const current = quantityMap.get(log.item_name) || 0
-
-        quantityMap.set(
-          log.item_name,
-          current + log.quantity
-        )
-      }
-    })
-
-    const result: string[] = []
-
-    checkedSet.forEach((name) => {
-      result.push(name)
-    })
-
-    quantityMap.forEach((quantity, name) => {
-      result.push(`${name}${quantity}`)
-    })
-
-    return result
   }
 
   const makeSectionResult = (
@@ -119,18 +77,32 @@ export default function BossPage() {
     }[]
   ) => {
     return sections.map((section) => {
-
-      const sectionItemNames = section.items
+      const items = section.items
         .filter((item) => item.type !== "empty")
-        .map((item) => item.name)
+        .map((item) => {
+          const itemLogs = logs.filter((log) => log.item_name === item.name)
 
-      const sectionLogs = logs.filter((log) =>
-        sectionItemNames.includes(log.item_name)
-      )
+          if (item.type === "check") {
+            const checked = itemLogs.some((log) => log.checked)
+            return checked ? item.name : null
+          }
+
+          if (item.type === "quantity") {
+            const totalQuantity = itemLogs.reduce(
+              (sum, log) => sum + (log.quantity || 0),
+              0
+            )
+
+            return totalQuantity > 0 ? `${item.name}${totalQuantity}` : null
+          }
+
+          return null
+        })
+        .filter((item): item is string => item !== null)
 
       return {
         title: section.title,
-        items: mergeItems(sectionLogs),
+        items,
       }
     })
   }
@@ -138,19 +110,14 @@ export default function BossPage() {
   const fetchLogs = async () => {
     setLoading(true)
 
-    const gangnamSessionKey =
-      getGangnamSessionKey()
-
-    const cheongjigiSessionKey =
-      getCheongjigiSessionKey()
+    const gangnamSessionKey = getGangnamSessionKey()
+    const cheongjigiSessionKey = getCheongjigiSessionKey()
 
     const { data, error } = await supabase
       .from("prepare_logs")
       .select("*")
       .in("store", ["gangnam", "cheongjigi"])
-      .order("created_at", {
-        ascending: true,
-      })
+      .order("created_at", { ascending: true })
 
     if (error) {
       console.log(error)
@@ -163,31 +130,18 @@ export default function BossPage() {
       data?.filter(
         (item) =>
           item.store === "gangnam" &&
-          item.session_key ===
-            gangnamSessionKey
+          item.session_key === gangnamSessionKey
       ) || []
 
     const cheongjigiLogs =
       data?.filter(
         (item) =>
           item.store === "cheongjigi" &&
-          item.session_key ===
-            cheongjigiSessionKey
+          item.session_key === cheongjigiSessionKey
       ) || []
 
-    setGangnamResult(
-      makeSectionResult(
-        gangnamLogs,
-        gangnamSections
-      )
-    )
-
-    setCheongjigiResult(
-      makeSectionResult(
-        cheongjigiLogs,
-        cheongjigiSections
-      )
-    )
+    setGangnamResult(makeSectionResult(gangnamLogs, gangnamSections))
+    setCheongjigiResult(makeSectionResult(cheongjigiLogs, cheongjigiSections))
 
     setLoading(false)
   }
@@ -198,9 +152,7 @@ export default function BossPage() {
 
   return (
     <main className="min-h-screen bg-stone-100 p-4">
-
       <div className="mx-auto max-w-md">
-
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -215,13 +167,7 @@ export default function BossPage() {
             </button>
 
             <div>
-              <h1 className="text-2xl font-bold">
-                사장님 화면
-              </h1>
-
-              {/* <p className="text-sm text-stone-500">
-                준비물 현황 */}
-              {/* </p> */}
+              <h1 className="text-2xl font-bold">사장님 화면</h1>
             </div>
           </div>
 
@@ -238,50 +184,23 @@ export default function BossPage() {
           </button>
         </div>
 
-
         {loading ? (
-
-          <div className="
-            rounded-2xl bg-white
-            p-5 text-center font-bold
-          ">
+          <div className="rounded-2xl bg-white p-5 text-center font-bold">
             불러오는 중...
           </div>
-
         ) : (
+          <div className="flex flex-col gap-4">
+            <StoreBox title="강남점" sections={gangnamResult} />
 
-          <div className="
-            flex flex-col gap-4
-          ">
+            <StoreBox title="청지기" sections={cheongjigiResult} />
 
-            <StoreBox
-              title="강남점"
-              sections={gangnamResult}
-            />
-
-            <StoreBox
-              title="청지기"
-              sections={cheongjigiResult}
-            />
-
-            <div className="
-              rounded-2xl bg-white
-              p-4 shadow-sm
-            ">
-
-              <h2 className="
-                mb-2 text-lg font-bold
-              ">
-                메모
-              </h2>
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="mb-2 text-lg font-bold">메모</h2>
 
               <textarea
                 value={memo}
-                onChange={(e) =>
-                  setMemo(e.target.value)
-                }
-                placeholder="
-                "
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder=""
                 className="
                   min-h-[120px]
                   w-full resize-none
@@ -291,15 +210,10 @@ export default function BossPage() {
                   outline-none
                 "
               />
-
             </div>
-
           </div>
-
         )}
-
       </div>
-
     </main>
   )
 }
@@ -312,33 +226,18 @@ function StoreBox({
   sections: SectionResult[]
 }) {
   return (
-    <div className="
-      rounded-2xl bg-white
-      p-4 shadow-sm
-    ">
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <h2 className="mb-4 text-xl font-bold">{title}</h2>
 
-      <h2 className="
-        mb-4 text-xl font-bold
-      ">
-        {title}
-      </h2>
-
-      <div className="
-        flex flex-col gap-4
-      ">
-
+      <div className="flex flex-col gap-4">
         {sections.map((section) => (
-
           <SectionBox
             key={section.title}
             title={section.title}
             items={section.items}
           />
-
         ))}
-
       </div>
-
     </div>
   )
 }
@@ -352,31 +251,17 @@ function SectionBox({
 }) {
   return (
     <div>
-
-      <h3 className="
-        mb-1 text-base
-        font-bold text-stone-500
-      ">
+      <h3 className="mb-1 text-base font-bold text-stone-500">
         {title}
       </h3>
 
       {items.length === 0 ? (
-
-        <p className="text-stone-300">
-          없음
-        </p>
-
+        <p className="text-stone-300">없음</p>
       ) : (
-
-        <p className="
-          text-xl font-bold
-          leading-relaxed
-        ">
+        <p className="text-xl font-bold leading-relaxed">
           {items.join(" ")}
         </p>
-
       )}
-
     </div>
   )
 }
