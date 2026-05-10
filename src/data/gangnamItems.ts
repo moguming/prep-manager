@@ -115,7 +115,7 @@ export const gangnamSections = [
       { type: "check", name: "고추기름" },
       { type: "check", name: "후추" },
       { type: "check", name: "데리야끼" },
-      { type: "check", name: "양파드레싱" },
+      { type: "check", name: "양파소스" },
       { type: "check", name: "버터" },
 
       { type: "check", name: "김가루" },
