@@ -6,6 +6,14 @@ import { ArrowLeft } from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
 
+const getKoreaNow = () => {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Seoul",
+    })
+  )
+}
+
 type PrepareLog = {
   id: number
   store: string

@@ -7,6 +7,14 @@ import { Check, Plus, Minus, ArrowLeft } from "lucide-react"
 import { gangnamSections } from "@/data/gangnamItems"
 import { supabase } from "@/lib/supabase"
 
+const getKoreaNow = () => {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Seoul",
+    })
+  )
+}
+
 export default function GangnamPage() {
   const router = useRouter()
 
@@ -37,7 +45,7 @@ export default function GangnamPage() {
 
 
   const getSessionKey = () => {
-    const now = new Date()
+    const now = getKoreaNow()
     const hour = now.getHours()
 
     const date = new Date(now)

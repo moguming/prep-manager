@@ -7,13 +7,21 @@ import { Check, ArrowLeft } from "lucide-react"
 import { cheongjigiSections } from "@/data/cheongjigiItems"
 import { supabase } from "@/lib/supabase"
 
+const getKoreaNow = () => {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Seoul",
+    })
+  )
+}
+
 export default function CheongjigiPage() {
   const router = useRouter()
 
   const [checkedItems, setCheckedItems] = useState<string[]>([])
 
   const getSessionKey = () => {
-    const now = new Date()
+    const now = getKoreaNow()
     const hour = now.getHours()
     const date = new Date(now)
 
@@ -37,6 +45,8 @@ export default function CheongjigiPage() {
   }
 
   const saveData = async () => {
+    console.log("checkedItems:", checkedItems)
+
     const sessionKey = getSessionKey()
 
     const rows = cheongjigiSections.flatMap((section) =>

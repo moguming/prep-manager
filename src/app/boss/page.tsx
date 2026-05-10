@@ -31,40 +31,6 @@ export default function BossPage() {
   const [memo, setMemo] = useState("")
   const [loading, setLoading] = useState(true)
 
-  const getGangnamSessionKey = () => {
-    const now = new Date()
-    const hour = now.getHours()
-    const date = new Date(now)
-
-    if (hour < 12) {
-      date.setDate(date.getDate() - 1)
-    }
-
-    const yyyy = date.getFullYear()
-    const mm = String(date.getMonth() + 1).padStart(2, "0")
-    const dd = String(date.getDate()).padStart(2, "0")
-
-    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
-
-    return `${yyyy}-${mm}-${dd}-${session}`
-  }
-
-  const getCheongjigiSessionKey = () => {
-    const now = new Date()
-    const hour = now.getHours()
-    const date = new Date(now)
-
-    if (hour < 13) {
-      date.setDate(date.getDate() - 1)
-    }
-
-    const yyyy = date.getFullYear()
-    const mm = String(date.getMonth() + 1).padStart(2, "0")
-    const dd = String(date.getDate()).padStart(2, "0")
-
-    return `${yyyy}-${mm}-${dd}`
-  }
-
   const makeSectionResult = (
     logs: PrepareLog[],
     sections: readonly {
@@ -110,14 +76,11 @@ export default function BossPage() {
   const fetchLogs = async () => {
     setLoading(true)
 
-    const gangnamSessionKey = getGangnamSessionKey()
-    const cheongjigiSessionKey = getCheongjigiSessionKey()
-
     const { data, error } = await supabase
       .from("prepare_logs")
       .select("*")
       .in("store", ["gangnam", "cheongjigi"])
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
 
     if (error) {
       console.log(error)
@@ -126,19 +89,27 @@ export default function BossPage() {
       return
     }
 
-    const gangnamLogs =
-      data?.filter(
-        (item) =>
-          item.store === "gangnam" &&
-          item.session_key === gangnamSessionKey
-      ) || []
+    const logs = data || []
 
-    const cheongjigiLogs =
-      data?.filter(
-        (item) =>
-          item.store === "cheongjigi" &&
-          item.session_key === cheongjigiSessionKey
-      ) || []
+    const latestGangnamSessionKey = logs.find(
+      (log) => log.store === "gangnam"
+    )?.session_key
+
+    const latestCheongjigiSessionKey = logs.find(
+      (log) => log.store === "cheongjigi"
+    )?.session_key
+
+    const gangnamLogs = logs.filter(
+      (log) =>
+        log.store === "gangnam" &&
+        log.session_key === latestGangnamSessionKey
+    )
+
+    const cheongjigiLogs = logs.filter(
+      (log) =>
+        log.store === "cheongjigi" &&
+        log.session_key === latestCheongjigiSessionKey
+    )
 
     setGangnamResult(makeSectionResult(gangnamLogs, gangnamSections))
     setCheongjigiResult(makeSectionResult(cheongjigiLogs, cheongjigiSections))
@@ -171,17 +142,29 @@ export default function BossPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => router.push("/boss/history")}
-            className="
-              h-10 px-3 rounded-xl
-              bg-black text-white
-              text-sm font-bold
-              shadow-sm
-            "
-          >
-            목록보기
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchLogs}
+              className="
+                h-10 px-3 rounded-xl
+                bg-stone-200 text-black
+                text-sm font-bold shadow-sm
+              "
+            >
+              새로고침
+            </button>
+
+            <button
+              onClick={() => router.push("/boss/history")}
+              className="
+                h-10 px-3 rounded-xl
+                bg-black text-white
+                text-sm font-bold shadow-sm
+              "
+            >
+              목록보기
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -191,7 +174,6 @@ export default function BossPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <StoreBox title="강남점" sections={gangnamResult} />
-
             <StoreBox title="청지기" sections={cheongjigiResult} />
 
             <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -200,7 +182,6 @@ export default function BossPage() {
               <textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
-                placeholder=""
                 className="
                   min-h-[120px]
                   w-full resize-none
@@ -251,9 +232,7 @@ function SectionBox({
 }) {
   return (
     <div>
-      <h3 className="mb-1 text-base font-bold text-stone-500">
-        {title}
-      </h3>
+      <h3 className="mb-1 text-base font-bold text-stone-500">{title}</h3>
 
       {items.length === 0 ? (
         <p className="text-stone-300">없음</p>
