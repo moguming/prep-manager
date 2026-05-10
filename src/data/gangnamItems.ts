@@ -12,14 +12,14 @@ export const gangnamSections = [
       { type: "check", name: "상추" },
       { type: "check", name: "무침장" },
       { type: "check", name: "참기름" },
+      { type: "check", name: "간마늘" },
       { type: "check", name: "참깨" },
-      { type: "empty" },
-
 
       { type: "quantity", name: "국밥고기" },
       { type: "quantity", name: "깐양" },
+      { type: "quantity", name: "양곰고기" },      
       { type: "check", name: "선지" },
-      { type: "check", name: "간마늘" },
+      
       { type: "check", name: "월계수" },
       { type: "check", name: "가루" },
 
@@ -55,11 +55,11 @@ export const gangnamSections = [
       { type: "check", name: "고무장갑" },
       { type: "check", name: "행주" },
       { type: "check", name: "키친타올" },
+      { type: "check", name: "퐁퐁" },
 
       { type: "check", name: "커피" },
       { type: "check", name: "두부" },
 
-      { type: "empty" },
     ],
   },
 
@@ -77,7 +77,7 @@ export const gangnamSections = [
       { type: "check", name: "청양" },
       { type: "check", name: "무말랭이" },
       { type: "check", name: "배추김치" },
-      { type: "empty" },
+      { type: "check", name: "참숯" },
       
       { type: "check", name: "종이컵" },
       { type: "check", name: "앞치마" },

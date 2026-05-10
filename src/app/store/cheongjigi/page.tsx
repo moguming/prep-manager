@@ -124,7 +124,7 @@ export default function CheongjigiPage() {
                       key={item.name}
                       onClick={() => toggleCheck(item.name)}
                       className={`
-                        min-h-[58px] rounded-xl p-1
+                        min-h-[40px] rounded-xl p-1
                         flex flex-col items-center justify-center gap-1
                         text-[15px] font-bold shadow-sm transition
                         ${
@@ -138,11 +138,11 @@ export default function CheongjigiPage() {
                         {item.name}
                       </span>
 
-                      {checked ? (
+                      {/* {checked ? (
                         <Check size={16} strokeWidth={3} />
                       ) : (
                         <span className="h-4" />
-                      )}
+                      )} */}
                     </button>
                   )
                 })}
