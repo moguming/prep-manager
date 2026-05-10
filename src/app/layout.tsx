@@ -18,12 +18,12 @@ const geistMono = Geist_Mono({
 // };
 
 export const metadata = {
-  title: "청계 준비물",
+  title: "준비물",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "청계 준비물",
+    title: "준비물",
   },
 }
 
