@@ -201,36 +201,43 @@ export default function BossPage() {
 
       <div className="mx-auto max-w-md">
 
-        <div className="
-          mb-5 flex items-center gap-3
-        ">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/")}
+              className="
+                w-10 h-10 rounded-full
+                bg-white shadow-sm
+                flex items-center justify-center
+              "
+            >
+              <ArrowLeft size={22} />
+            </button>
 
-          <button
-            onClick={() => router.push("/")}
-            className="
-              w-10 h-10 rounded-full
-              bg-white shadow-sm
-              flex items-center justify-center
-            "
-          >
-            <ArrowLeft size={22} />
-          </button>
+            <div>
+              <h1 className="text-2xl font-bold">
+                사장님 화면
+              </h1>
 
-          <div>
-
-            <h1 className="text-2xl font-bold">
-              사장님 화면
-            </h1>
-
-            <p className="
-              text-sm text-stone-500
-            ">
-              준비물 현황
-            </p>
-
+              <p className="text-sm text-stone-500">
+                준비물 현황
+              </p>
+            </div>
           </div>
 
+          <button
+            onClick={() => router.push("/boss/history")}
+            className="
+              h-10 px-3 rounded-xl
+              bg-black text-white
+              text-sm font-bold
+              shadow-sm
+            "
+          >
+            목록보기
+          </button>
         </div>
+
 
         {loading ? (
 
@@ -274,7 +281,6 @@ export default function BossPage() {
                   setMemo(e.target.value)
                 }
                 placeholder="
-추가 전달사항을 적어주세요
                 "
                 className="
                   min-h-[120px]
