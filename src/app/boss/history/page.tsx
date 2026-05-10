@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
+import { gangnamSections } from "@/data/gangnamItems"
+import { cheongjigiSections } from "@/data/cheongjigiItems"
 
 const getKoreaNow = () => {
   return new Date(
@@ -70,41 +72,39 @@ export default function HistoryPage() {
     return 99
   }
 
-  const mergeItems = (logs: PrepareLog[]) => {
-    const orderedNames: string[] = []
-    const checkedSet = new Set<string>()
-    const quantityMap = new Map<string, number>()
+  const mergeItemsBySections = (logs: PrepareLog[], store: string) => {
+    const sections = store === "gangnam" ? gangnamSections : cheongjigiSections
 
-    logs.forEach((log) => {
-      if (!orderedNames.includes(log.item_name)) {
-        orderedNames.push(log.item_name)
-      }
+    const result: string[] = []
 
-      if (log.checked) {
-        checkedSet.add(log.item_name)
-      }
+    sections.forEach((section) => {
+      section.items.forEach((item) => {
+        if (item.type === "empty") return
 
-      if (log.quantity > 0) {
-        const current = quantityMap.get(log.item_name) || 0
-        quantityMap.set(log.item_name, current + log.quantity)
-      }
+        const itemLogs = logs.filter((log) => log.item_name === item.name)
+
+        if (item.type === "check") {
+          const checked = itemLogs.some((log) => log.checked)
+
+          if (checked) {
+            result.push(item.name)
+          }
+
+          return
+        }
+
+        const totalQuantity = itemLogs.reduce(
+          (sum, log) => sum + (log.quantity || 0),
+          0
+        )
+
+        if (totalQuantity > 0) {
+          result.push(`${item.name}${totalQuantity}`)
+        }
+      })
     })
 
-    return orderedNames
-      .map((name) => {
-        if (checkedSet.has(name)) {
-          return name
-        }
-
-        const quantity = quantityMap.get(name) || 0
-
-        if (quantity > 0) {
-          return `${name}${quantity}`
-        }
-
-        return null
-      })
-      .filter((item): item is string => item !== null)
+    return result
   }
 
   const fetchHistory = async () => {
@@ -222,9 +222,7 @@ export default function HistoryPage() {
                   className="rounded-2xl bg-white p-3 shadow-sm"
                 >
                   <button
-                    onClick={() =>
-                      setOpenDate(isOpen ? "" : dateGroup.date)
-                    }
+                    onClick={() => setOpenDate(isOpen ? "" : dateGroup.date)}
                     className={`
                       w-full rounded-xl px-4 py-3
                       text-left text-lg font-bold
@@ -241,7 +239,10 @@ export default function HistoryPage() {
                   {isOpen && (
                     <div className="mt-3 flex flex-col gap-3">
                       {dateGroup.sessions.map((session) => {
-                        const items = mergeItems(session.logs)
+                        const items = mergeItemsBySections(
+                          session.logs,
+                          session.store
+                        )
 
                         return (
                           <div
