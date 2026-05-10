@@ -116,7 +116,7 @@ export default function CheongjigiPage() {
                       className={`
                         min-h-[58px] rounded-xl p-1
                         flex flex-col items-center justify-center gap-1
-                        text-[11px] font-bold shadow-sm transition
+                        text-[15px] font-bold shadow-sm transition
                         ${
                           checked
                             ? "bg-green-500 text-white"

@@ -160,7 +160,7 @@ export default function GangnamPage() {
                         className={`
                           min-h-[60px] rounded-xl p-1
                           flex flex-col items-center justify-center gap-1
-                          text-sm font-bold shadow-sm transition
+                          text-[15px] font-bold shadow-sm transition
                           ${
                             checked
                               ? "bg-green-500 text-white"
@@ -197,7 +197,7 @@ export default function GangnamPage() {
                     >
 
                       <span className="
-                        text-center text-sm font-bold leading-tight
+                        text-center text-[15px] font-bold leading-tight
                       ">
                         {item.name}
                       </span>
