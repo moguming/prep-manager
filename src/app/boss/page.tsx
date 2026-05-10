@@ -23,6 +23,14 @@ type SectionResult = {
   items: string[]
 }
 
+const getKoreaNow = () => {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Seoul",
+    })
+  )
+}
+
 export default function BossPage() {
   const router = useRouter()
 
@@ -30,6 +38,40 @@ export default function BossPage() {
   const [cheongjigiResult, setCheongjigiResult] = useState<SectionResult[]>([])
   const [memo, setMemo] = useState("")
   const [loading, setLoading] = useState(true)
+
+  const getGangnamSessionKey = () => {
+    const now = getKoreaNow()
+    const hour = now.getHours()
+    const date = new Date(now)
+
+    if (hour < 12) {
+      date.setDate(date.getDate() - 1)
+    }
+
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+
+    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
+
+    return `${yyyy}-${mm}-${dd}-${session}`
+  }
+
+  const getCheongjigiSessionKey = () => {
+    const now = getKoreaNow()
+    const hour = now.getHours()
+    const date = new Date(now)
+
+    if (hour < 13) {
+      date.setDate(date.getDate() - 1)
+    }
+
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+
+    return `${yyyy}-${mm}-${dd}`
+  }
 
   const makeSectionResult = (
     logs: PrepareLog[],
@@ -53,16 +95,12 @@ export default function BossPage() {
             return checked ? item.name : null
           }
 
-          if (item.type === "quantity") {
-            const totalQuantity = itemLogs.reduce(
-              (sum, log) => sum + (log.quantity || 0),
-              0
-            )
+          const totalQuantity = itemLogs.reduce(
+            (sum, log) => sum + (log.quantity || 0),
+            0
+          )
 
-            return totalQuantity > 0 ? `${item.name}${totalQuantity}` : null
-          }
-
-          return null
+          return totalQuantity > 0 ? `${item.name}${totalQuantity}` : null
         })
         .filter((item): item is string => item !== null)
 
@@ -76,11 +114,14 @@ export default function BossPage() {
   const fetchLogs = async () => {
     setLoading(true)
 
+    const gangnamSessionKey = getGangnamSessionKey()
+    const cheongjigiSessionKey = getCheongjigiSessionKey()
+
     const { data, error } = await supabase
       .from("prepare_logs")
       .select("*")
       .in("store", ["gangnam", "cheongjigi"])
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: true })
 
     if (error) {
       console.log(error)
@@ -91,24 +132,16 @@ export default function BossPage() {
 
     const logs = data || []
 
-    const latestGangnamSessionKey = logs.find(
-      (log) => log.store === "gangnam"
-    )?.session_key
-
-    const latestCheongjigiSessionKey = logs.find(
-      (log) => log.store === "cheongjigi"
-    )?.session_key
-
     const gangnamLogs = logs.filter(
       (log) =>
         log.store === "gangnam" &&
-        log.session_key === latestGangnamSessionKey
+        log.session_key === gangnamSessionKey
     )
 
     const cheongjigiLogs = logs.filter(
       (log) =>
         log.store === "cheongjigi" &&
-        log.session_key === latestCheongjigiSessionKey
+        log.session_key === cheongjigiSessionKey
     )
 
     setGangnamResult(makeSectionResult(gangnamLogs, gangnamSections))
@@ -232,7 +265,9 @@ function SectionBox({
 }) {
   return (
     <div>
-      <h3 className="mb-1 text-base font-bold text-stone-500">{title}</h3>
+      <h3 className="mb-1 text-base font-bold text-stone-500">
+        {title}
+      </h3>
 
       {items.length === 0 ? (
         <p className="text-stone-300">없음</p>
