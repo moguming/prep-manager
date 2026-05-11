@@ -104,6 +104,32 @@ export default function BossPage() {
     return result
   }
 
+  // const makeSectionResult = (
+  //   logs: PrepareLog[],
+  //   sections: readonly {
+  //     readonly title: string
+  //     readonly items: readonly (
+  //       | { readonly type: "check"; readonly name: string }
+  //       | { readonly type: "quantity"; readonly name: string }
+  //       | { readonly type: "empty" }
+  //     )[]
+  //   }[]
+  // ) => {
+  //   return sections.map((section) => {
+  //     const sectionNames = section.items
+  //       .filter((item) => item.type !== "empty")
+  //       .map((item) => item.name)
+
+  //     const sectionLogs = logs.filter((log) =>
+  //       sectionNames.includes(log.item_name)
+  //     )
+
+  //     return {
+  //       title: section.title,
+  //       items: mergeItems(sectionLogs),
+  //     }
+  //   })
+  // }
   const makeSectionResult = (
     logs: PrepareLog[],
     sections: readonly {
@@ -116,17 +142,32 @@ export default function BossPage() {
     }[]
   ) => {
     return sections.map((section) => {
-      const sectionNames = section.items
+      const items = section.items
         .filter((item) => item.type !== "empty")
-        .map((item) => item.name)
+        .map((item) => {
+          const itemLogs = logs.filter(
+            (log) => log.item_name === item.name
+          )
 
-      const sectionLogs = logs.filter((log) =>
-        sectionNames.includes(log.item_name)
-      )
+          if (item.type === "check") {
+            const checked = itemLogs.some((log) => log.checked)
+            return checked ? item.name : null
+          }
+
+          const totalQuantity = itemLogs.reduce(
+            (sum, log) => sum + (log.quantity || 0),
+            0
+          )
+
+          return totalQuantity > 0
+            ? `${item.name}${totalQuantity}`
+            : null
+        })
+        .filter((item): item is string => item !== null)
 
       return {
         title: section.title,
-        items: mergeItems(sectionLogs),
+        items,
       }
     })
   }
@@ -136,6 +177,7 @@ export default function BossPage() {
 
     const gangnamSessionKey = getGangnamSessionKey()
     const cheongjigiSessionKey = getCheongjigiSessionKey()
+
 
     const { data, error } = await supabase
       .from("prepare_logs")
@@ -152,6 +194,7 @@ export default function BossPage() {
       setLoading(false)
       return
     }
+  
 
     const logs = data || []
 
