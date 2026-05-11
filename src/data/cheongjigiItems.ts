@@ -18,21 +18,21 @@ export const cheongjigiSections  = [
       { type: "check", name: "감자" },
       { type: "check", name: "양파" },
       { type: "empty" },
-      { type: "empty" },
-      { type: "empty" },      
+      { type: "check", name: "무절임" },
+      { type: "check", name: "막국수" },   
 
       { type: "check", name: "얼갈이" },
       { type: "check", name: "쌀" },
       { type: "check", name: "참깨" },
       { type: "check", name: "계란" },
       { type: "check", name: "간마늘" },
-      { type: "check", name: "참기름" },
+      
 
       { type: "check", name: "쯔유" },
       { type: "check", name: "들기름" },
       { type: "check", name: "국간장" },
       { type: "check", name: "물엿" },
-      { type: "check", name: "무절임" },
+      { type: "check", name: "참기름" },
 
       { type: "check", name: "팽이" },
       { type: "check", name: "느타리" },
