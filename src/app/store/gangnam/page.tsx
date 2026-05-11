@@ -45,20 +45,23 @@ export default function GangnamPage() {
 
 
   const getSessionKey = () => {
-    const now = getKoreaNow()
+    const now = new Date()
     const hour = now.getHours()
-
     const date = new Date(now)
 
-    if (hour < 12) {
-      date.setDate(date.getDate() - 1)
+    // 20시 이후 저장은 다음날 점심 준비물
+    if (hour >= 20) {
+      date.setDate(date.getDate() + 1)
     }
 
     const yyyy = date.getFullYear()
     const mm = String(date.getMonth() + 1).padStart(2, "0")
     const dd = String(date.getDate()).padStart(2, "0")
 
-    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
+    const session =
+      hour >= 13 && hour < 20
+        ? "dinner"
+        : "lunch"
 
     return `${yyyy}-${mm}-${dd}-${session}`
   }

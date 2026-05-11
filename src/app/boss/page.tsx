@@ -44,15 +44,17 @@ export default function BossPage() {
     const hour = now.getHours()
     const date = new Date(now)
 
-    if (hour < 12) {
-      date.setDate(date.getDate() - 1)
+    // 20시 이후 저장/조회는 다음날 점심 준비물
+    if (hour >= 20) {
+      date.setDate(date.getDate() + 1)
     }
 
     const yyyy = date.getFullYear()
     const mm = String(date.getMonth() + 1).padStart(2, "0")
     const dd = String(date.getDate()).padStart(2, "0")
 
-    const session = hour >= 12 && hour < 20 ? "lunch" : "dinner"
+    // 13시~19시59분은 오늘 저녁 준비물
+    const session = hour >= 13 && hour < 20 ? "dinner" : "lunch"
 
     return `${yyyy}-${mm}-${dd}-${session}`
   }
@@ -62,8 +64,9 @@ export default function BossPage() {
     const hour = now.getHours()
     const date = new Date(now)
 
-    if (hour < 13) {
-      date.setDate(date.getDate() - 1)
+    // 13시 이후 저장/조회는 다음날 준비물
+    if (hour >= 13) {
+      date.setDate(date.getDate() + 1)
     }
 
     const yyyy = date.getFullYear()
@@ -71,6 +74,34 @@ export default function BossPage() {
     const dd = String(date.getDate()).padStart(2, "0")
 
     return `${yyyy}-${mm}-${dd}`
+  }
+
+  const mergeItems = (logs: PrepareLog[]) => {
+    const checkedSet = new Set<string>()
+    const quantityMap = new Map<string, number>()
+
+    logs.forEach((log) => {
+      if (log.checked) {
+        checkedSet.add(log.item_name)
+      }
+
+      if (log.quantity > 0) {
+        const current = quantityMap.get(log.item_name) || 0
+        quantityMap.set(log.item_name, current + log.quantity)
+      }
+    })
+
+    const result: string[] = []
+
+    checkedSet.forEach((name) => {
+      result.push(name)
+    })
+
+    quantityMap.forEach((quantity, name) => {
+      result.push(`${name}${quantity}`)
+    })
+
+    return result
   }
 
   const makeSectionResult = (
@@ -85,28 +116,17 @@ export default function BossPage() {
     }[]
   ) => {
     return sections.map((section) => {
-      const items = section.items
+      const sectionNames = section.items
         .filter((item) => item.type !== "empty")
-        .map((item) => {
-          const itemLogs = logs.filter((log) => log.item_name === item.name)
+        .map((item) => item.name)
 
-          if (item.type === "check") {
-            const checked = itemLogs.some((log) => log.checked)
-            return checked ? item.name : null
-          }
-
-          const totalQuantity = itemLogs.reduce(
-            (sum, log) => sum + (log.quantity || 0),
-            0
-          )
-
-          return totalQuantity > 0 ? `${item.name}${totalQuantity}` : null
-        })
-        .filter((item): item is string => item !== null)
+      const sectionLogs = logs.filter((log) =>
+        sectionNames.includes(log.item_name)
+      )
 
       return {
         title: section.title,
-        items,
+        items: mergeItems(sectionLogs),
       }
     })
   }
@@ -121,6 +141,9 @@ export default function BossPage() {
       .from("prepare_logs")
       .select("*")
       .in("store", ["gangnam", "cheongjigi"])
+      .or(
+        `session_key.eq.${gangnamSessionKey},session_key.eq.${cheongjigiSessionKey}`
+      )
       .order("created_at", { ascending: true })
 
     if (error) {
@@ -206,8 +229,8 @@ export default function BossPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <StoreBox title="강남점" sections={gangnamResult} />
-            <StoreBox title="청지기" sections={cheongjigiResult} />
+            <StoreSectionBox title="강남점" sections={gangnamResult} />
+            <StoreSectionBox title="청지기" sections={cheongjigiResult} />
 
             <div className="rounded-2xl bg-white p-4 shadow-sm">
               <h2 className="mb-2 text-lg font-bold">메모</h2>
@@ -232,7 +255,7 @@ export default function BossPage() {
   )
 }
 
-function StoreBox({
+function StoreSectionBox({
   title,
   sections,
 }: {
@@ -244,38 +267,20 @@ function StoreBox({
       <h2 className="mb-4 text-xl font-bold">{title}</h2>
 
       <div className="flex flex-col gap-4">
-        {sections.map((section) => (
-          <SectionBox
-            key={section.title}
-            title={section.title}
-            items={section.items}
-          />
-        ))}
+        {sections
+          .filter((section) => section.items.length > 0)
+          .map((section) => (
+            <div key={section.title}>
+              <h3 className="mb-1 text-base font-bold text-stone-500">
+                {section.title}
+              </h3>
+
+              <p className="text-xl font-bold leading-relaxed">
+                {section.items.join(" ")}
+              </p>
+            </div>
+          ))}
       </div>
-    </div>
-  )
-}
-
-function SectionBox({
-  title,
-  items,
-}: {
-  title: string
-  items: string[]
-}) {
-  return (
-    <div>
-      <h3 className="mb-1 text-base font-bold text-stone-500">
-        {title}
-      </h3>
-
-      {items.length === 0 ? (
-        <p className="text-stone-300">없음</p>
-      ) : (
-        <p className="text-xl font-bold leading-relaxed">
-          {items.join(" ")}
-        </p>
-      )}
     </div>
   )
 }

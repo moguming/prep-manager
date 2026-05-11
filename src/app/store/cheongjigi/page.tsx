@@ -21,12 +21,13 @@ export default function CheongjigiPage() {
   const [checkedItems, setCheckedItems] = useState<string[]>([])
 
   const getSessionKey = () => {
-    const now = getKoreaNow()
+    const now = new Date()
     const hour = now.getHours()
     const date = new Date(now)
 
-    if (hour < 13) {
-      date.setDate(date.getDate() - 1)
+    // 13시 이후 저장은 다음날 준비물
+    if (hour >= 13) {
+      date.setDate(date.getDate() + 1)
     }
 
     const yyyy = date.getFullYear()
