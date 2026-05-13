@@ -102,6 +102,8 @@ export default function GangnamPage() {
       alert("저장 실패")
       return
     }
+    setCheckedItems([])
+    setQuantityItems({})
 
     alert("저장 완료!")
   }
